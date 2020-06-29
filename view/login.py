@@ -1,5 +1,5 @@
 from tkinter import *
-from chatroom import Chatroom
+from view.chatroom import Chatroom
 import threading
 
 PORT = 9056

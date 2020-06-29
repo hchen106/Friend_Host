@@ -1,8 +1,10 @@
 from tkinter import *
 import threading
 import socket
-from message_encoder import message
-from stream_display import stream
+import sys, os
+sys.path.append(os.path.abspath(os.path.join('..', 'controller')))
+from controller.message_encoder import message
+from view.stream_display import stream
 
 
 class Chatroom:
