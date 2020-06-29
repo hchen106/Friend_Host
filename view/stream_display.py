@@ -5,6 +5,8 @@ class stream:
         
         self.frame = Tk()
         self.display_UI()
+        self.frame.title("Friend Host")
+        #self.frame.geometry("400x300")
         self.frame.mainloop()
         
 
@@ -14,9 +16,13 @@ class stream:
         self.mainframe = Frame(self.frame, width = 500, height = 380, bg = 'lightgrey')
         self.mainframe.grid(row = 0, column = 0, padx = 5, pady = 5)
         
+        #Label
+        self.stream_label = Label(self.frame)
+        self.stream_label.grid(row = 1, column = 0, padx = 5, pady = 5)
+
         #buttons frame to put buttons
         self.buttons_frame = Frame(self.frame, width = 500, height = 50, bg = 'lightgrey')
-        self.buttons_frame.grid(row = 1, column = 0, padx = 10, pady = 0)
+        self.buttons_frame.grid(row = 2, column = 0, padx = 5, pady = 5)
 
         #start button
         self.start_btn = Button(self.buttons_frame, text = 'Start', width=8)

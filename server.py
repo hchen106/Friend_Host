@@ -7,7 +7,7 @@ from controller.message_encoder import message
 
 class server:
     
-    PORT = 9054
+    PORT = 9060
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []

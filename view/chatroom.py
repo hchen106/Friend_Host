@@ -18,6 +18,9 @@ class Chatroom:
         self.ADDR = ADDR
         self.tcp_connection()
         self.frame = Tk()
+        self.frame.resizable(0, 0)
+        self.frame.geometry("275x400")
+        self.frame.title("Friend Host")
         self.frame.protocol("WM_DELETE_WINDOW",self.close)
         self.chatroom_UI()
         self.initialize()
@@ -26,31 +29,40 @@ class Chatroom:
     def chatroom_UI(self):
          #the Right frame of the GUI
         self.subframe = Frame(self.frame, width = 170, height = 380, bg = 'lightgrey')
-        self.subframe.grid(row = 0, column = 1, padx = 5, pady = 5)
+        self.subframe.grid(row = 0, column = 1, padx = 5, pady = 5, sticky="nsew")
 
         #Chat room Text display
         self.chat_room = Text(self.subframe, width = 30, height = 19)
-        self.chat_room.grid(row = 0, column = 0, padx = 5, pady = 5)
-
+        self.scroll_bar = Scrollbar(self.subframe, command=self.chat_room.yview, orient = "vertical")
+        self.chat_room.grid(row = 0, column = 0, padx = 5, pady = 5, sticky="nsew")
+        self.scroll_bar.grid(row = 0, column = 1, sticky = "ns")
+        self.chat_room.configure(yscrollcommand = self.scroll_bar.set)
         self.text_entry = Entry(self.subframe, width = 30)
-        self.text_entry.grid(row = 1, column = 0, padx = 5, pady = 5)   
-    
+        self.text_entry.bind("<Return>", self.pressEnter)
+        self.text_entry.grid(row = 1, column = 0, padx = 5, pady = 5, sticky="nsew")   
+        
+        
+        self.btn_frame = Frame(self.subframe, width = 30)
+        self.btn_frame.grid(row = 2, column = 0, padx = 5, pady = 5)   
+
+        
         #send button to send / show message in chat room
-        self.send_btn = Button(self.subframe, text = 'Send', width = 8, command=self.sendText)
+        self.send_btn = Button(self.btn_frame, text = 'Send', width = 8, command=self.sendText)
         self.send_btn.grid(row = 2, column = 0, padx = 5, pady = 5)
 
-        self.stream_btn = Button(self.subframe, text = 'Stream', width = 8, command=self.start_stream)
+        self.stream_btn = Button(self.btn_frame, text = 'Stream', width = 8, command=self.start_stream)
         self.stream_btn.grid(row = 2, column = 1, padx = 5, pady = 5)
 
-        #press ENTER to send message
-        self.text_entry.bind('<Return>', self.sendText)
-
+        
 
     
-    
+    def pressEnter(self, event) :
+        a = event
+        self.sendText()
+
+
     #function for text entry displays in chat room
     def sendText(self):
-
         m = message()
         mes = m.encode(self.username,self.text_entry.get())
         #mes = bytes(self.text_entry.get(), 'utf-8')
@@ -67,7 +79,11 @@ class Chatroom:
         except:
             print("Failed to receive Response")
         """
+        #auto scroll when text is full
+        self.is_text_full = self.chat_room.yview()[1] == 1.0
         self.chat_room.insert(END, self.username + " : " + self.text_entry.get() + "\n")
+        if self.is_text_full:
+            self.chat_room.see("end")
         self.text_entry.delete(0, END)
 
     def update_chat_room(self):
