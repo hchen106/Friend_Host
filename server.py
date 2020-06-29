@@ -3,7 +3,7 @@ import sys
 import threading
 import pickle
 import struct
-from message_encoder import message
+from controller.message_encoder import message
 
 class server:
     
