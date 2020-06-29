@@ -4,7 +4,7 @@ import threading
 
 PORT = 9060
 #ip = '10.0.0.89'
-#ip = '167.99.160.18'
+ip = '167.99.160.18'
 ip = 'localhost'
 
 

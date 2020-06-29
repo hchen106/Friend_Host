@@ -14,6 +14,7 @@ class server:
     closing_socket = []
     Size = 0
     closing_size = 0
+    Host = False
     
     #d = b''
     def __init__(self):
@@ -95,10 +96,23 @@ class server:
             #self.print_closing()
             #mes = b'User has quit the room'
         else:
+            m = message()
+            m.decode(mes)
+            allow = True
+            if(m.get_username() == "server"):
+                code = m.get_message().split(' ', 1)
+                if(code[0] == "1"):
+                    if(self.Host == False):
+                        self.Host = True
+                        self.clients_socket[num][1].send(b'server 2 You start streaming.')
+                        #TODO: Establishing a thread to receive video and audio frames
+                    else: 
+                        self.clients_socket[num][1].send(b'server 3 Someone in the chatroom is streaming.')
+                        allow = False
             try: 
                 
                 i = 0
-                while(i < self.Size) :
+                while(i < self.Size and allow == True) :
                     if(i!=num and self.clients_socket[i] != None): 
                         self.clients_socket[i][1].send(mes)
                     i += 1

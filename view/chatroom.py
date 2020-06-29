@@ -100,7 +100,14 @@ class Chatroom:
             m.decode(mes)
 
             if(m.get_username() == "server"):
-                self.chat_room.insert(END, m.get_message() + "\n")
+                code = m.get_message().split(' ',1)
+                if(code[0] == 2):
+                    threading.Thread(target = stream_room).start()
+                    self.chat_room.insert(END,code[1] + "\n")
+                elif(code[0] == 3):
+                    self.chat_room.insert(END,code[1] + "\n")
+                else:
+                    self.chat_room.insert(END, m.get_message() + "\n")
             else:
                 #s = mes.decode("utf-8")
                 self.chat_room.insert(END, m.get_username() + " : " + m.get_message() + "\n")
@@ -114,6 +121,8 @@ class Chatroom:
             print("Failed to close the tcp socket.")
         print("done")
 
+    def stream_room(self):
+        self.stream = stream(self.username,self.ADDR[0],self.ADDR[1]+1)
 
     def close(self):
 
@@ -161,7 +170,10 @@ class Chatroom:
         #self.updateThread.set()
     
     def start_stream(self):
-        self.stream = stream()
+        m = message()
+        mes = m.encode("server","1 " + self.username + " has started a streaming.")
+        self.tcp_socket.send(mes)
+        #self.stream = stream(self.username,self.ADDR[0],self.ADDR[1]+1)
     
 
 
