@@ -101,10 +101,13 @@ class Chatroom:
 
             if(m.get_username() == "server"):
                 code = m.get_message().split(':',1)
-                if(code[0] == 2):
-                    threading.Thread(target = stream_room).start()
+                #print(code[0])
+                #print(code[1])
+                if(code[0] == "2"):
+                    threading.Thread(target = self.stream_room).start()
+                    #print("enter")
                     self.chat_room.insert(END,code[1] + "\n")
-                elif(code[0] == 3):
+                elif(code[0] == "3"):
                     self.chat_room.insert(END,code[1] + "\n")
                 else:
                     self.chat_room.insert(END, m.get_message() + "\n")
