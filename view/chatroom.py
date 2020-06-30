@@ -100,7 +100,7 @@ class Chatroom:
             m.decode(mes)
 
             if(m.get_username() == "server"):
-                code = m.get_message().split(' ',1)
+                code = m.get_message().split(':',1)
                 if(code[0] == 2):
                     threading.Thread(target = stream_room).start()
                     self.chat_room.insert(END,code[1] + "\n")

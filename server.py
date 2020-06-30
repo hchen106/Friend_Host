@@ -15,6 +15,7 @@ class server:
     Size = 0
     closing_size = 0
     Host = False
+    Host_num = 0
     
     #d = b''
     def __init__(self):
@@ -90,6 +91,7 @@ class server:
         if(mes == b''):
             self.clients_socket[num][1].send(mes)
             #self.closing_socket[num] = None
+            self.Host = False
             self.clients_socket[num] = None
             print("One client log out")
             self.print_clients()
@@ -104,10 +106,11 @@ class server:
                 if(code[0] == "1"):
                     if(self.Host == False):
                         self.Host = True
-                        self.clients_socket[num][1].send(b'server 2 You start streaming.')
+                        self.Host_num = num
+                        self.clients_socket[num][1].send(b'server 2:You start streaming.')
                         #TODO: Establishing a thread to receive video and audio frames
                     else: 
-                        self.clients_socket[num][1].send(b'server 3 Someone in the chatroom is streaming.')
+                        self.clients_socket[num][1].send(b'server 3:Someone in the chatroom is streaming.')
                         allow = False
             try: 
                 

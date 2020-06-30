@@ -10,7 +10,7 @@ class stream:
         self.frame = Tk()
         self.display_UI()
         self.frame.title("Streaming")
-        self.udp_connection()
+        #self.udp_connection()
         #self.frame.geometry("400x300")
         self.frame.mainloop()
         
@@ -43,4 +43,5 @@ class stream:
 
     def udp_connection(self):
         self.udp_socket = socket.socket(socket.AD_INET,socket.SOCK_DGRAM)
-        
+    
+
