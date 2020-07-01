@@ -67,6 +67,7 @@ class Chatroom:
         mes = m.encode(self.username,self.text_entry.get())
         #mes = bytes(self.text_entry.get(), 'utf-8')
         try:
+            
             self.tcp_socket.send(mes)
             print("Message Sent")
         except:
@@ -98,19 +99,28 @@ class Chatroom:
                 break
             m = message()
             m.decode(mes)
-
-            if(m.get_username() == "server"):
+            if(m.get_username() == "server" and m.get_message() == ":"):
+                break
+            elif(m.get_username() == "server" and m.get_message() == " "):
+                self.chat_room.insert(END,"Streaming is closed.\n")
+            
+            elif(m.get_username() == "server"):
+                
                 code = m.get_message().split(':',1)
                 #print(code[0])
                 #print(code[1])
                 if(code[0] == "2"):
-                    threading.Thread(target = self.stream_room).start()
+                    threading.Thread(target = self.stream_room, args = (True, )).start()
+                    
                     #print("enter")
                     self.chat_room.insert(END,code[1] + "\n")
                 elif(code[0] == "3"):
                     self.chat_room.insert(END,code[1] + "\n")
                 else:
+                    
                     self.chat_room.insert(END, m.get_message() + "\n")
+                    #TODO: ADD a link to join the stream
+                    
             else:
                 #s = mes.decode("utf-8")
                 self.chat_room.insert(END, m.get_username() + " : " + m.get_message() + "\n")
@@ -124,13 +134,25 @@ class Chatroom:
             print("Failed to close the tcp socket.")
         print("done")
 
-    def stream_room(self):
-        self.stream = stream(self.username,self.ADDR[0],self.ADDR[1]+1)
+    def stream_room(self,host):
+        print("create strem room")
+        stream_frame = Tk()
+        self.stream = stream(stream_frame,self.username,self.ADDR[0],self.ADDR[1]+1, host)
+        m = message()
+        mes = m.encode("server"," ")
+        self.tcp_socket.send(mes)
+        #stream_frame.destroy()
+        
+        print("streaming done")
+        #self.videoThread.join()
 
     def close(self):
 
+        m = message()
+        mes = m.encode("server", ":")
 
-        self.tcp_socket.send(b'')
+        self.tcp_socket.send(mes)
+        print("close message sent")
         
         
         m = "" + self.username + " closed"
@@ -166,9 +188,8 @@ class Chatroom:
     #Initialization of all the functionalities. 
     def initialize(self): 
         #Initialize a thread to wait for messages from other clients.
-        self.stop_thread = False
-        self.updateThread = threading.Thread(target=self.update_chat_room)
-        self.updateThread.start()
+        threading.Thread(target=self.update_chat_room).start()
+        
         #self.updateThread.start()
         #self.updateThread.set()
     

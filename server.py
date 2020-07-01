@@ -7,28 +7,31 @@ from controller.message_encoder import message
 
 class server:
     
-    PORT = 9060
+    PORT = 9118
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
-    closing_socket = []
+    visitor_list = []
     Size = 0
     closing_size = 0
     Host = False
     Host_num = 0
+    visitor_num = 0
+    #ip = '10.0.0.89'
+    #ip = '167.99.160.18'
+    ip = 'localhost'
     
-    #d = b''
+   
     def __init__(self):
         self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.tcp_socket.bind(('',self.PORT))
         self.tcp_socket.listen(5)
-        self.closing_tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.closing_tcp_socket.bind(('',self.PORT+1))
-        self.closing_tcp_socket.listen(5)
-
+        self.udp_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        self.udp_socket.bind((self.ip,self.PORT+1))
+        self.recv_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        self.recv_socket.bind((self.ip,self.PORT+2))
         threading.Thread(target=self.tcp_connection).start()
-        threading.Thread(target=self.closing_tcp_connection).start()
-        #self.print_list()
+        
 
 
     def print_clients(self):
@@ -37,90 +40,66 @@ class server:
             print(c)
         print("----------------------")
     
-    def print_closing(self):
-        print("-------------closing_socket--------")
-        for c in self.closing_socket:
-            print(c)
-        print("----------------------")
-
-    """
-    def recv_screen(self):
-        print("in recv_screen")
-        data = b''
-        payload_size = struct.calcsize("L") 
-        while True:
-            while len(data) < payload_size:
-                data += self.clients_socket[0].recv(4096)
-            packed_msg_size = data[:payload_size]
-            data = data[payload_size:]
-            msg_size = struct.unpack("L", packed_msg_size)[0]
-            while len(data) < msg_size:
-                data += self.clients_socket[0].recv(4096)
-            frame_data = data[:msg_size]
-            data = data[msg_size:]
-
-            if self.Size > 1:
-
-                d = pickle.dumps(frame_data) ### new code
-                self.clients_socket[1].sendall(struct.pack("L", len(d))+d) ### new code
-            
-            ###
-            
-            frame=pickle.loads(frame_data)
-            print frame
-            cv2.imshow('framd = pickle.dumps(frame_data) ### new code
-            self.tcp_socket.sendall(struct.pack("H", len(d))+d) ### new codeonnection
-            
-        """
+   
 
     def recv_message(self,num):
-        try: 
-            while(True):
+        #try: 
+        while(True):
+            try:
                 mes = self.clients_socket[num][1].recv(4096)
-                """
-                try: 
-                    self.clients_socket[num].send(b'received')
-                except:
-                    print("Failed to reply ")
-                """
+                print(mes)
+                
                 self.send_message(num,mes)
-        except: 
-            print("Failed to receive message")
+            except:
+                break
+        #except: 
+        #    print("Failed to receive message")
         
     def send_message(self,num,mes):
-        if(mes == b''):
-            self.clients_socket[num][1].send(mes)
-            #self.closing_socket[num] = None
-            self.Host = False
-            self.clients_socket[num] = None
-            print("One client log out")
-            self.print_clients()
-            #self.print_closing()
-            #mes = b'User has quit the room'
-        else:
+        if(mes != b''):
             m = message()
             m.decode(mes)
-            allow = True
-            if(m.get_username() == "server"):
-                code = m.get_message().split(' ', 1)
-                if(code[0] == "1"):
-                    if(self.Host == False):
-                        self.Host = True
-                        self.Host_num = num
-                        self.clients_socket[num][1].send(b'server 2:You start streaming.')
-                        #TODO: Establishing a thread to receive video and audio frames
-                    else: 
-                        self.clients_socket[num][1].send(b'server 3:Someone in the chatroom is streaming.')
-                        allow = False
-            try: 
+            
+            if(m.get_username() == "server" and m.get_message() == ":"):
+                self.clients_socket[num][1].send(mes)
+                #self.closing_socket[num] = None
+                self.Host = False
+                self.clients_socket[num] = None
+                print("One client log out")
+                self.print_clients()
+                #self.print_closing()
+                #mes = b'User has quit the room'
+            elif(m.get_username() == "server" and m.get_message() == " "):
+                self.clients_socket[num][1].send(mes)
+                print("streaming closed")
+                print(mes)
+                self.Host = False
+            else:
                 
+                allow = True
+                if(m.get_username() == "server"):
+                    
+                    code = m.get_message().split(' ', 1)
+                    if(code[0] == "1"):
+                        if(self.Host == False):
+                            self.Host = True
+                            self.Host_num = num
+                            c = code[1].split(':',1)
+                            self.clients_socket[num][1].send(b'server 2:You start streaming.')
+                            #TODO: Establishing a thread to receive video and audio frames
+                            threading.Thread(target = self.udp_connection).start()
+                        else: 
+                            self.clients_socket[num][1].send(b'server 3:Someone in the chatroom is streaming.')
+                            allow = False
+                #try: 
+                    
                 i = 0
                 while(i < self.Size and allow == True) :
                     if(i!=num and self.clients_socket[i] != None): 
                         self.clients_socket[i][1].send(mes)
                     i += 1
-            except: 
-                print("Failed to send message ")
+                #except: 
+                #    print("Failed to send message ")
     
     def recv_closing_message(self,num):
         index = 0
@@ -148,35 +127,7 @@ class server:
         self.print_clients()
         self.print_closing()
 
-    def closing_tcp_connection(self):
-        while True:
-            c  = self.closing_tcp_socket.accept()
-
-           
-            self.closing_socket.append(c[0])
-            threading.Thread(target = self.recv_closing_message,args = (self.closing_size ,)).start()
-            addr = c[1]
-            #self.clients_address.append(addr)
-
-            self.closing_size += 1
-            self.print_closing()
-            """
-            if self.Size == 0:
-                c[0].send(b'host')
-               # threading.Thread(target = self.recv_message,args = (self.Size)).start()
-            else:
-                c[0].send(b'client')
-            """
-
-
-            
-            """
-            print("Get connection from: ", addr)
-            m = ("welcome to chat room").encode('utf-8')
-            c[0].send(m)
-            """
-
-
+   
 
     def tcp_connection(self):
         while True:
@@ -193,24 +144,52 @@ class server:
             self.send_message(self.Size,mes)
             
             addr = c[1]
-            self.clients_address.append(addr)
-            """
-            if self.Size == 0:
-                c[0].send(b'host')
-               # threading.Thread(target = self.recv_message,args = (self.Size)).start()
-            else:
-                c[0].send(b'client')
-            """
-
-            
+            self.clients_address.append(addr) 
             self.Size += 1
             self.print_clients()
             
-            """
-            print("Get connection from: ", addr)
-            m = ("welcome to chat room").encode('utf-8')
-            c[0].send(m)
-            """
+
+    def udp_connection(self):
+
+        
+        # self.visit_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        # self.visit_socket.bind(('',self.PORT+1))
+        # self.visit_socket.listen(5)
+        data , addr = self.udp_socket.recvfrom(4096)
+        d = data.decode('utf-8')
+        self.visitor_list.append((d,addr))
+        self.visitor_num += 1
+        
+        #print(addr)
+        threading.Thread(target = self.wait_for_join_stream).start()
+        #self.receive_and_send_frame()
+        self.receive_frame()
+
+
+    
+    def wait_for_join_stream(self):
+        while True:
+            data , addr = self.udp_socket.recvfrom(4096)
+            d = data.decode('utf-8')
+            
+            self.visitor_list.append((d,addr))
+            self.visitor_num += 1
+        
+    def receive_frame(self):
+        #TODO: receive frame from the host
+        
+        while True:
+
+            video_frame, addr =  self.recv_socket.recvfrom(4096)
+            threading.Thread(target = self.send_frame, args = (video_frame,)).start()
+
+    def send_frame(self, video_frame):
+        
+        self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        for visitor in self.visitor_list:
+            #TODO: send frame to all visitors
+            self.sender_socket.sendto( video_frame, visitor[1])
+       
 
 
 server()
