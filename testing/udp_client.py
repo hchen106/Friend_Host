@@ -4,8 +4,8 @@ import time
 class client:
 
     def __init__(self):
-        self.ip = "localhost"
-        self.port = 4004
+        self.ip = '167.99.160.18'
+        self.port = 4006
         self.ADDR = (self.ip, self.port)
         self.establish_connection()
 
@@ -28,6 +28,7 @@ class client:
     def establish_connection(self):
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.udp_socket.sendto(b'hi',self.ADDR)
+        self.udp_socket.sendto(b'go',self.ADDR)
 
 
         #self.tcp_connection()

@@ -4,8 +4,8 @@ import threading
 class server:
 
     def __init__(self):
-        self.ip = "localhost"
-        self.port = 4004
+        self.ip = '167.99.160.18'
+        self.port = 4006
         self.ADDR = (self.ip, self.port)
         #self.tcp_connecion()
         self.receive_connection()
@@ -35,7 +35,7 @@ class server:
         while True:
             data, self.addr = self.udp_socket.recvfrom(4096)
             print(self.addr)
-            if(data):
+            if(data == b'go'):
                 #self.tcp_connecion()
                 break
         
