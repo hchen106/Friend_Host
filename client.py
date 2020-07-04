@@ -11,6 +11,7 @@ import pickle
 import struct
 import threading
 from view.login import Login
+from view.login_pyqt import Ui_Login
 
 
 class client:
@@ -33,7 +34,7 @@ class client:
         #Chat Room UI
         #self.tcp_connection()
         #self.chatroom = Chatroom( self.username, self.ADDR)
-        self.login = Login()
+        self.login = Ui_Login()
         
         # newChatroom = chatroom.Chatroom(frame, username, ADDR)
         # newChatroom.tcp_connection()
