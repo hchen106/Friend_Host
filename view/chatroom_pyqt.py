@@ -23,7 +23,7 @@ class Ui_Chatroom(object):
         self.ADDR = ADDR
         self.tcp_connection()
         #self.textBrowser.insertPlainText("You have entered the chat room\n"
-        self.initialize()
+        #self.initialize()
     
     def openStream(self):
         self.streamWindow = QtWidgets.QMainWindow()
@@ -74,7 +74,7 @@ class Ui_Chatroom(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Chatroom"))
         self.send_Button.setText(_translate("MainWindow", "Send"))
         self.stream_Button.setText(_translate("MainWindow", "Stream"))
 
