@@ -7,7 +7,7 @@ from controller.message_encoder import message
 
 class server:
     
-    PORT = 9118
+    PORT = 9133
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -18,8 +18,8 @@ class server:
     Host_num = 0
     visitor_num = 0
     #ip = '10.0.0.89'
-    #ip = '167.99.160.18'
-    ip = 'localhost'
+    ip = '167.99.160.18'
+    #ip = 'localhost'
     
    
     def __init__(self):

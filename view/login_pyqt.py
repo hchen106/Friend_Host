@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from view.chatroom_pyqt import Ui_Chatroom
 from view.signup_pyqt import Ui_SignUp
 
-PORT = 9118
+PORT = 9133
 #ip = '10.0.0.89'
 #ip = '167.99.160.18'
 ip = 'localhost'
@@ -36,11 +36,8 @@ class Ui_Login(object):
         threading.Thread(target = self.openChatroom).start()
     
     def openChatroom(self):
-        self.chatWindow = QtWidgets.QMainWindow()
         self.name = self.username_entry.text()
-        self.ui = Ui_Chatroom(self.name, self.ADDR)
-        self.ui.setupUi(self.chatWindow)
-        self.chatWindow.show()
+        self.ui = Ui_Chatroom(self.app,self.name, self.ADDR)
         #self.chatroom = Ui_Chatroom( self.name, self.ADDR)
         MainWindow.close()
 
@@ -53,7 +50,8 @@ class Ui_Login(object):
 
     
     
-    def setupUi(self, MainWindow):
+    def setupUi(self, app,MainWindow):
+        self.app = app
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(315, 137)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -114,5 +112,6 @@ class Ui_Login(object):
 app = QtWidgets.QApplication(sys.argv)
 MainWindow = QtWidgets.QMainWindow()
 ui = Ui_Login()
-ui.setupUi(MainWindow)
+ui.setupUi(app,MainWindow)
+print("Matthew")
 sys.exit(app.exec_())

@@ -15,16 +15,22 @@ import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from view.stream_display_pyqt import Ui_Stream
 from controller.message_encoder import message
+from PyQt5.QtWidgets import (QApplication,QWidget)
 
 class Ui_Chatroom(object):
     
-    def __init__(self, username, ADDR):
+    def __init__(self,app, username, ADDR):
         self.username = username
         self.ADDR = ADDR
         self.tcp_connection()
-        #self.textBrowser.insertPlainText("You have entered the chat room\n"
-        #self.initialize()
-    
+        self.chatWindow = QtWidgets.QMainWindow()
+        self.setupUi( self.chatWindow)
+        self.app = app
+        self.app.aboutToQuit.connect(self.close)
+        self.chatWindow.show()
+        self.initialize()
+        
+
     def openStream(self):
         self.streamWindow = QtWidgets.QMainWindow()
         self.ui = Ui_Stream(self.username,self.ADDR[0],self.ADDR[1]+1)
@@ -70,7 +76,27 @@ class Ui_Chatroom(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
+        
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+    
+    def close(self):
+
+        m = message()
+        mes = m.encode("server", ":")
+
+        self.tcp_socket.send(mes)
+        print("close message sent")
+        
+        
+        m = "" + self.username + " closed"
+        m = bytes(m,'utf-8')
+        #self.closing_tcp_socket.send(m)
+        print("finished")
+        
+        #self.chatWindow.close()
+        #sys.exit(self.app.exec_())
+        #print(self.updateThread.is_alive())
+        #sys.exit()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -99,6 +125,7 @@ class Ui_Chatroom(object):
         mes = m.encode(self.username,self.lineEdit.text())
         #mes = bytes(self.text_entry.get(), 'utf-8')
         try:
+            print(mes)
             self.tcp_socket.send(mes)
             print("Message Sent")
         except:
@@ -113,14 +140,15 @@ class Ui_Chatroom(object):
 
      
     def update_chat_room(self):
-        #self.textBrowser.insertPlainText("You have entered the chat room\n")
+        self.textBrowser.insertPlainText("You have entered the chat room\n")
+        #self.textBrowser.insertPlainText("asda")
         #TODO: 
         while True: 
             #print("1")
             
             mes = self.tcp_socket.recv(4096)
-            
-            if(mes == b''):
+            print(mes)
+            if(mes == b'server :'):
                 break
             m = message()
             m.decode(mes)
@@ -152,9 +180,8 @@ class Ui_Chatroom(object):
     #Initialization of all the functionalities. 
     def initialize(self): 
         #Initialize a thread to wait for messages from other clients.
-        self.stop_thread = False
-        self.updateThread = threading.Thread(target=self.update_chat_room)
-        self.updateThread.start()
+        threading.Thread(target=self.update_chat_room).start()
+        
         #self.updateThread.start()
         #self.updateThread.set()
 
@@ -163,11 +190,15 @@ class Ui_Chatroom(object):
 
 
 
+"""
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    print("dasda")
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_Chatroom()
     ui.setupUi(MainWindow)
+    #app.aboutToQuit.connect(ui.close)
     MainWindow.show()
     sys.exit(app.exec_())
+"""
