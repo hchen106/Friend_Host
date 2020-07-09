@@ -10,15 +10,25 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import socket
+import threading
+import cv2
+import time
+from struct import pack
+from struct import unpack
 
 
 class Ui_Stream(object):
-    def __init__(self,username,ip,port):
+    def __init__(self,username,ip,port,host):
         self.username = username
         self.ip = ip
         self.port = port
+        self.host = host
         self.ADDR = (self.ip,self.port)
-        self.udp_connection()
+        print("UI")
+        self.streamWindow = QtWidgets.QMainWindow()
+        self.setupUi(self.streamWindow)
+        self.streamWindow.show()
+        threading.Thread(target = self.connection).start()
     
     
     def setupUi(self, MainWindow):
@@ -34,6 +44,7 @@ class Ui_Stream(object):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setObjectName("pushButton")
         self.gridLayout.addWidget(self.pushButton, 1, 0, 1, 1)
+        self.pushButton.clicked.connect(self.play)
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setObjectName("pushButton_2")
         self.gridLayout.addWidget(self.pushButton_2, 1, 1, 1, 1)
@@ -55,8 +66,65 @@ class Ui_Stream(object):
         self.pushButton_2.setText(_translate("MainWindow", "Stop"))
         self.pushButton_3.setText(_translate("MainWindow", "Mute"))
 
-    def udp_connection(self):
-        self.udp_socket = socket.socket(socket.AD_INET,socket.SOCK_DGRAM)
+    def connection(self):
+        self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.tcp_socket.connect(self.ADDR)
+        #threading.Thread(target = tself.sendFrame).start()
+        mes = bytes(self.username, 'utf-8')
+        self.tcp_socket.send(mes)
+        
+        
+        threading.Thread(targer = self.recvFrame()).start()
+
+    def play(self):
+        if(self.host == True):
+            threading.Thread(target = self.sendFrame).start()
+
+    def sendFrame(self):
+        print("sendFrame()")
+        self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
+        self.sender_socket.connect((self.ip,self.port+1))
+        self.file = cv2.VideoCapture("/home/matthew779/friend_host/test/Friend_Host/view/720p.mp4")
+        self.file.set(3,1280)
+        self.file.set(4,720)
+        
+        while self.file.isOpened(): 
+            #time.sleep(1.5)
+            ret, frame = self.file.read()
+            if ret: 
+                cv2.imwrite("frame.jpg",frame)
+                if cv2.waitKey(100) & 0xFF == ord('q'):
+                    break
+                F = open("frame.jpg",'rb')
+                data = F.read()
+                F.close()
+                length = pack('>Q', len(data))
+                print(length)
+
+                # sendall to make sure it blocks if there's back-pressure on the socket
+                self.sender_socket.sendall(length)
+                self.sender_socket.sendall(data)
+                #self.sender_socket.sendall(b'ended')
+
+        
+        self.sender_socket.close()
+
+    def recvFrame(self):
+        print("recvFrame()")
+        while True: 
+            length =  self.tcp_socket.recv(8)
+            if length:
+                #print(length)
+                (length,) = unpack('>Q', length)
+                data = b''
+                while len(data) < length:
+                    
+                    #to_read = length - len(data)
+                    data += self.tcp_socket.recv(4096)
+                F = open("frame2.jpg","wb")
+                F.write(data)
+                F.close()
 
 if __name__ == "__main__":
     import sys

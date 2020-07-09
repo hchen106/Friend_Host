@@ -4,32 +4,32 @@ import threading
 import pickle
 import struct
 from controller.message_encoder import message
+from struct import unpack
+from struct import pack
 
 class server:
     
-    PORT = 9133
+    PORT = 9254
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
-    visitor_list = []
+    visitor_list = {}
     Size = 0
     closing_size = 0
     Host = False
     Host_num = 0
     visitor_num = 0
     #ip = '10.0.0.89'
-    ip = '167.99.160.18'
-    #ip = 'localhost'
+    #ip = '167.99.160.18'
+    ip = 'localhost'
     
    
     def __init__(self):
         self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.tcp_socket.bind(('',self.PORT))
         self.tcp_socket.listen(5)
-        self.udp_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.udp_socket.bind((self.ip,self.PORT+1))
-        self.recv_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        self.recv_socket.bind((self.ip,self.PORT+2))
+        
+        
         threading.Thread(target=self.tcp_connection).start()
         
 
@@ -155,13 +155,18 @@ class server:
         # self.visit_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         # self.visit_socket.bind(('',self.PORT+1))
         # self.visit_socket.listen(5)
-        data , addr = self.udp_socket.recvfrom(4096)
+        self.stream_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.stream_socket.bind((self.ip,self.PORT+1))
+        self.stream_socket.listen(5)
+
+        c, addr = self.stream_socket.accept()
+        data = c.recv(4096)
         d = data.decode('utf-8')
-        self.visitor_list.append((d,addr))
+        self.visitor_list[d] = c
         self.visitor_num += 1
         
         #print(addr)
-        threading.Thread(target = self.wait_for_join_stream).start()
+        #threading.Thread(target = self.wait_for_join_stream).start()
         #self.receive_and_send_frame()
         self.receive_frame()
 
@@ -177,18 +182,39 @@ class server:
         
     def receive_frame(self):
         #TODO: receive frame from the host
-        
+        self.recv_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.recv_socket.bind((self.ip,self.PORT+2))
+        self.recv_socket.listen(5)
+        connection, addr = self.recv_socket.accept()
         while True:
+            print(addr)
+            l =  connection.recv(8)
+            print(l)
+            (length,) = unpack('>Q', l)
+            data = b''
+            while len(data) < length:
+                # doing it in batches is generally better than trying
+                # to do it all in one go, so I believe.
+                #to_read = length - len(data)
+                data += connection.recv(4096)
+            
+            threading.Thread(target = self.send_frame, args = (l, data,)).start()
+            # F = open("frame1.jpg","wb")
+            # F.write(data)
+            # F.close()
+            #threading.Thread(target = self.send_frame, args = (video_frame,)).start()
 
-            video_frame, addr =  self.recv_socket.recvfrom(4096)
-            threading.Thread(target = self.send_frame, args = (video_frame,)).start()
-
-    def send_frame(self, video_frame):
+    def send_frame(self, length, data):
         
-        self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         for visitor in self.visitor_list:
             #TODO: send frame to all visitors
-            self.sender_socket.sendto( video_frame, visitor[1])
+            #length = pack('>Q', len(data))
+            #print(length)
+            print(visitor)
+            # sendall to make sure it blocks if there's back-pressure on the socket
+            self.visitor_list[visitor].sendall(length)
+            self.visitor_list[visitor].sendall(data)
        
 
 

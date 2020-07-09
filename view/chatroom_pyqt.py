@@ -15,7 +15,7 @@ import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from view.stream_display_pyqt import Ui_Stream
 from controller.message_encoder import message
-from PyQt5.QtWidgets import (QApplication,QWidget)
+from PyQt5.QtWidgets import (QApplication, QWidget, QMessageBox)
 
 class Ui_Chatroom(object):
     
@@ -30,12 +30,17 @@ class Ui_Chatroom(object):
         self.chatWindow.show()
         self.initialize()
         
+    def initializeStream(self):
+        m = message()
+        mes = m.encode("server","1 " + self.username + " has started a streaming.")
+        self.tcp_socket.send(mes)
+        time.sleep(1)
+        self.openStream()
 
     def openStream(self):
-        self.streamWindow = QtWidgets.QMainWindow()
-        self.ui = Ui_Stream(self.username,self.ADDR[0],self.ADDR[1]+1)
-        self.ui.setupUi(self.streamWindow)
-        self.streamWindow.show()
+        
+        self.ui = Ui_Stream(self.username,self.ADDR[0],self.ADDR[1]+1,True)
+        print("stop")
     
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -67,7 +72,7 @@ class Ui_Chatroom(object):
         self.gridLayout.addWidget(self.send_Button, 2, 0, 1, 1)
         self.stream_Button = QtWidgets.QPushButton(self.centralwidget)
         self.stream_Button.setObjectName("stream_Button")
-        self.stream_Button.clicked.connect(self.openStream)
+        self.stream_Button.clicked.connect(self.initializeStream)
 
         self.gridLayout.addWidget(self.stream_Button, 2, 1, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -92,6 +97,7 @@ class Ui_Chatroom(object):
         m = bytes(m,'utf-8')
         #self.closing_tcp_socket.send(m)
         print("finished")
+        #self.streamWindow.close()
         
         #self.chatWindow.close()
         #sys.exit(self.app.exec_())
@@ -154,11 +160,11 @@ class Ui_Chatroom(object):
             m.decode(mes)
 
             if(m.get_username() == "server"):
-                code = m.get_message().split(' ',1)
-                if(code[0] == 2):
-                    threading.Thread(target = self.stream_room).start()
+                code = m.get_message().split(':',1)
+                if(code[0] == "2"):
+                    print("streaming")
                     self.textBrowser.insertPlainText(code[1] + "\n")
-                elif(code[0] == 3):
+                elif(code[0] == "3"):
                     self.textBrowser.insertPlainText(code[1] + "\n")
                 else:
                     self.textBrowser.insertPlainText(m.get_message() + "\n")
