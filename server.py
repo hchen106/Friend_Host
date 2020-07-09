@@ -9,7 +9,7 @@ from struct import pack
 
 class server:
     
-    PORT = 9330
+    PORT = 9345
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -188,7 +188,7 @@ class server:
         self.recv_socket.bind((self.ip,self.PORT+2))
         self.recv_socket.listen(5)
         connection, addr = self.recv_socket.accept()
-        threading.Thread(target = self.send_frame).start()
+        #threading.Thread(target = self.send_frame).start()
         while True:
             #print(addr)
             l =  connection.recv(8)
@@ -203,12 +203,12 @@ class server:
             connection.send(b'ended')
             self.buffer.append((frame_count, l, data))
             frame_count += 1
-            #threading.Thread(target = self.send_frame, args = (l, data,)).start()
+            threading.Thread(target = self.send_frame, args = (l, data,)).start()
             # F = open("frame1.jpg","wb")
             # F.write(data)
             # F.close()
             #threading.Thread(target = self.send_frame, args = (video_frame,)).start()
-
+    """
     def send_frame(self):
         
         #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -229,7 +229,25 @@ class server:
                     self.mess = b''
                     while self.mess != b'ended':
                         self.mess = self.visitor_list[visitor].recv(4096)
-       
+    """
+
+    def send_frame(self, length, data):
+        
+        #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        
+        for visitor in self.visitor_list:
+            #TODO: send frame to all visitors
+            #length = pack('>Q', len(data))
+            #print(length)
+            #print(visitor)
+            # sendall to make sure it blocks if there's back-pressure on the socket
+            self.visitor_list[visitor].sendall(length)
+            self.visitor_list[visitor].sendall(data)
+
+            self.mess = b''
+            while self.mess != b'ended':
+                self.mess = self.visitor_list[visitor].recv(4096)
+
 
 
 server()
