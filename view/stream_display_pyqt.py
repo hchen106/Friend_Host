@@ -30,6 +30,7 @@ class Ui_Stream(object):
         self.setupUi(self.streamWindow)
         self.streamWindow.show()
         threading.Thread(target = self.connection).start()
+        self.buffer = []
     
     
     def setupUi(self, MainWindow):
@@ -127,16 +128,26 @@ class Ui_Stream(object):
                 #print(length)
                 (length,) = unpack('>Q', length)
                 data = b''
+                print(length)
                 while len(data) < length:
                     
                     #to_read = length - len(data)
                     data += self.tcp_socket.recv(4096)
-                F = open("frame2.jpg","wb")
-                F.write(data)
-                F.close()
-                pixmap = QPixmap("frame2.jpg")
-                self.label.setPixmap(pixmap)
+                
+                self.tcp_socket.send(b'ended')
+                
+                threadin.Thread(target = self.display, args = (data, )).start()
                 #self.resize(pixmap.width(),pixmap.height())
+                
+    
+    def display(self, data):
+       # if(len(buffer) == 200):
+
+        F = open("frame2.jpg","wb")
+        F.write(data)
+        F.close()
+        pixmap = QPixmap("frame2.jpg")
+        self.label.setPixmap(pixmap)
 
 if __name__ == "__main__":
     import sys

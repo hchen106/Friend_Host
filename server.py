@@ -9,7 +9,7 @@ from struct import pack
 
 class server:
     
-    PORT = 9269
+    PORT = 9300
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -20,8 +20,8 @@ class server:
     Host_num = 0
     visitor_num = 0
     #ip = '10.0.0.89'
-    #ip = '167.99.160.18'
-    ip = 'localhost'
+    ip = '167.99.160.18'
+    #ip = 'localhost'
     
    
     def __init__(self):
@@ -215,6 +215,11 @@ class server:
             # sendall to make sure it blocks if there's back-pressure on the socket
             self.visitor_list[visitor].sendall(length)
             self.visitor_list[visitor].sendall(data)
+
+            self.mess = b''
+            while self.mess != b'ended':
+                self.mess = self.visitor_list[visitor].recv(4096)
+            
        
 
 
