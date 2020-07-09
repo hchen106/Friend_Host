@@ -90,35 +90,44 @@ class Ui_Stream(object):
     def sendFrame(self):
         print("sendFrame()")
         self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
+        count = 0
         self.sender_socket.connect((self.ip,self.port+1))
         self.file = cv2.VideoCapture("/home/matthew779/friend_host/test/Friend_Host/view/720p.mp4")
         self.file.set(3,1280)
         self.file.set(4,720)
-        
+        pixmap = QPixmap("/home/matthew779/friend_host/test/Friend_Host/resources/loading_Image.jpg")
+        #pixmap.loadFromData()
+        self.label.setPixmap(pixmap)
         while self.file.isOpened(): 
             #time.sleep(1.5)
+            
+
             ret, frame = self.file.read()
             if ret: 
                 cv2.imwrite("frame.jpg",frame)
-                if cv2.waitKey(100) & 0xFF == ord('q'):
+                if cv2.waitKey(10) & 0xFF == ord('q'):
                     break
                 F = open("frame.jpg",'rb')
                 data = F.read()
                 F.close()
                 length = pack('>Q', len(data))
                 #print(length)
-
+                count += 1
                 # sendall to make sure it blocks if there's back-pressure on the socket
+                if count == 100: 
+                    self.sender_socket.send(b'')
+                    break
                 self.sender_socket.sendall(length)
                 self.sender_socket.sendall(data)
                 #self.sender_socket.sendall(b'ended')
                 self.mess = b''
                 while self.mess != b'ended':
                     self.mess = self.sender_socket.recv(4096)
+        #self.sender_socket.send(b'')
                     
         
         self.sender_socket.close()
+        print("send frame thread end")
 
     def recvFrame(self):
         print("recvFrame()")
@@ -129,16 +138,21 @@ class Ui_Stream(object):
             
             if length:
                 #print(length)       
-                #print(length)
+                print(length)
                 (length,) = unpack('>Q', length)
                 data = b''
                 
                 while len(data) < length:
                     
-                    #to_read = length - len(data)
-                    data += self.tcp_socket.recv(4096)
+                    to_read = length - len(data)
+                    if to_read > 4096: 
+                        data += self.tcp_socket.recv(4096)
+                    else:
+                        data += self.tcp_socket.recv(to_read)
+                        
                 
-                self.tcp_socket.send(b'ended')
+                #self.tcp_socket.send(b'ended')
+                #threading.Thread(target = self.display, args = (data,)).start()
                 # F = open("frame2.jpg","wb")
                 # #data = self.buffer[0]
                 # F.write(data)
@@ -151,8 +165,13 @@ class Ui_Stream(object):
                 #frame_count += 1
                 #threading.Thread(target = self.display, args = (data, )).start()
                 #self.resize(pixmap.width(),pixmap.height())
-                
     
+    def display(self,data):
+        pixmap = QPixmap()
+        pixmap.loadFromData(data)
+        self.label.setPixmap(pixmap)
+                
+    """
     def display(self):
         while True: 
             print("loading")
@@ -167,7 +186,7 @@ class Ui_Stream(object):
                 self.label.setPixmap(pixmap)
                 self.buffer.remove(data)
                 time.sleep(0.04)
-
+    """
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

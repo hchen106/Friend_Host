@@ -241,6 +241,7 @@ class server:
             #print(length)
             #print(visitor)
             # sendall to make sure it blocks if there's back-pressure on the socket
+            length = pack('>Q', len(data))
             self.visitor_list[visitor].sendall(length)
             self.visitor_list[visitor].sendall(data)
 
