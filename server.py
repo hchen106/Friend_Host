@@ -9,7 +9,7 @@ from struct import pack
 
 class server:
     
-    PORT = 9394
+    PORT = 9397
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -21,8 +21,8 @@ class server:
     Host_num = 0
     visitor_num = 0
     #ip = '10.0.0.89'
-    #ip = '167.99.160.18'
-    ip = 'localhost'
+    ip = '167.99.160.18'
+    #ip = 'localhost'
     
    
     def __init__(self):
@@ -192,7 +192,10 @@ class server:
         while True:
             #print(addr)
             l =  connection.recv(8)
-            #print(l)
+            print(l)
+            if l == b'': 
+                break
+            
             (length,) = unpack('>Q', l)
             data = b''
             while len(data) < length:
@@ -203,12 +206,15 @@ class server:
             connection.send(b'ended')
             self.buffer.append((frame_count, l, data))
             frame_count += 1
-            threading.Thread(target = self.send_frame, args = (l, data,)).start()
+            
+            
+            #threading.Thread(target = self.send_frame, args = (l, data,)).start()
             # F = open("frame1.jpg","wb")
             # F.write(data)
             # F.close()
             #threading.Thread(target = self.send_frame, args = (video_frame,)).start()
-    """
+        self.send_frame()
+    
     def send_frame(self):
         
         #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -226,11 +232,9 @@ class server:
                     self.visitor_list[visitor].sendall(frame[1])
                     self.visitor_list[visitor].sendall(frame[2])
 
-                    self.mess = b''
-                    while self.mess != b'ended':
-                        self.mess = self.visitor_list[visitor].recv(4096)
-    """
+                    
 
+    """
     def send_frame(self, length, data):
         
         #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -248,7 +252,7 @@ class server:
             self.mess = b''
             while self.mess != b'ended':
                 self.mess = self.visitor_list[visitor].recv(4096)
-
+    """
 
 
 server()
