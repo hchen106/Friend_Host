@@ -139,11 +139,12 @@ class Ui_Stream(object):
                     data += self.tcp_socket.recv(4096)
                 
                 self.tcp_socket.send(b'ended')
-                F = open("frame2.jpg","wb")
-                #data = self.buffer[0]
-                F.write(data)
-                F.close()
-                pixmap = QPixmap("frame2.jpg")
+                # F = open("frame2.jpg","wb")
+                # #data = self.buffer[0]
+                # F.write(data)
+                # F.close()
+                pixmap = QPixmap()
+                pixmap.loadFromData(data)
                 self.label.setPixmap(pixmap)
                 #self.buffer.remove(data)
                 #self.buffer.append((frame_count, data))

@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from view.chatroom_pyqt import Ui_Chatroom
 from view.signup_pyqt import Ui_SignUp
 
-PORT = 9345
+PORT = 9394
 #ip = '10.0.0.89'
 #ip = '167.99.160.18'
 ip = 'localhost'
