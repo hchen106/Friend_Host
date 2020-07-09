@@ -9,19 +9,20 @@ from struct import pack
 
 class server:
     
-    PORT = 9300
+    PORT = 9330
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
     visitor_list = {}
+    buffer = []
     Size = 0
     closing_size = 0
     Host = False
     Host_num = 0
     visitor_num = 0
     #ip = '10.0.0.89'
-    ip = '167.99.160.18'
-    #ip = 'localhost'
+    #ip = '167.99.160.18'
+    ip = 'localhost'
     
    
     def __init__(self):
@@ -182,14 +183,16 @@ class server:
         
     def receive_frame(self):
         #TODO: receive frame from the host
+        frame_count = 0
         self.recv_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.recv_socket.bind((self.ip,self.PORT+2))
         self.recv_socket.listen(5)
         connection, addr = self.recv_socket.accept()
+        threading.Thread(target = self.send_frame).start()
         while True:
-            print(addr)
+            #print(addr)
             l =  connection.recv(8)
-            print(l)
+            #print(l)
             (length,) = unpack('>Q', l)
             data = b''
             while len(data) < length:
@@ -198,28 +201,34 @@ class server:
                 #to_read = length - len(data)
                 data += connection.recv(4096)
             connection.send(b'ended')
-            threading.Thread(target = self.send_frame, args = (l, data,)).start()
+            self.buffer.append((frame_count, l, data))
+            frame_count += 1
+            #threading.Thread(target = self.send_frame, args = (l, data,)).start()
             # F = open("frame1.jpg","wb")
             # F.write(data)
             # F.close()
             #threading.Thread(target = self.send_frame, args = (video_frame,)).start()
 
-    def send_frame(self, length, data):
+    def send_frame(self):
         
         #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        for visitor in self.visitor_list:
-            #TODO: send frame to all visitors
-            #length = pack('>Q', len(data))
-            #print(length)
-            print(visitor)
-            # sendall to make sure it blocks if there's back-pressure on the socket
-            self.visitor_list[visitor].sendall(length)
-            self.visitor_list[visitor].sendall(data)
+        current = 0
+        while True:
+            if(current < len(self.buffer)):
+                frame = self.buffer[current]
+                current += 1
+                for visitor in self.visitor_list:
+                    #TODO: send frame to all visitors
+                    #length = pack('>Q', len(data))
+                    #print(length)
+                    #print(visitor)
+                    # sendall to make sure it blocks if there's back-pressure on the socket
+                    self.visitor_list[visitor].sendall(frame[1])
+                    self.visitor_list[visitor].sendall(frame[2])
 
-            self.mess = b''
-            while self.mess != b'ended':
-                self.mess = self.visitor_list[visitor].recv(4096)
-            
+                    self.mess = b''
+                    while self.mess != b'ended':
+                        self.mess = self.visitor_list[visitor].recv(4096)
        
 
 

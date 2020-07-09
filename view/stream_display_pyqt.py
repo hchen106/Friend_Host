@@ -122,32 +122,43 @@ class Ui_Stream(object):
 
     def recvFrame(self):
         print("recvFrame()")
+        frame_count = 0
+        threading.Thread(target = self.display).start()
         while True: 
             length =  self.tcp_socket.recv(8)
+            
             if length:
+                #print(length)       
                 #print(length)
                 (length,) = unpack('>Q', length)
                 data = b''
-                print(length)
+                
                 while len(data) < length:
                     
                     #to_read = length - len(data)
                     data += self.tcp_socket.recv(4096)
                 
                 self.tcp_socket.send(b'ended')
-                
-                threadin.Thread(target = self.display, args = (data, )).start()
+                self.buffer.append((frame_count, data))
+                frame_count += 1
+                #threading.Thread(target = self.display, args = (data, )).start()
                 #self.resize(pixmap.width(),pixmap.height())
                 
     
-    def display(self, data):
-       # if(len(buffer) == 200):
-
-        F = open("frame2.jpg","wb")
-        F.write(data)
-        F.close()
-        pixmap = QPixmap("frame2.jpg")
-        self.label.setPixmap(pixmap)
+    def display(self):
+        while True: 
+            print("loading")
+            while len(self.buffer) < 200: 
+                i = 1
+            while len(self.buffer) >= 10: 
+                F = open("frame2.jpg","wb")
+                data = self.buffer[0]
+                F.write(data[1])
+                F.close()
+                pixmap = QPixmap("frame2.jpg")
+                self.label.setPixmap(pixmap)
+                self.buffer.remove(data)
+                time.sleep(0.04)
 
 if __name__ == "__main__":
     import sys

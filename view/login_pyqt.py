@@ -13,10 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from view.chatroom_pyqt import Ui_Chatroom
 from view.signup_pyqt import Ui_SignUp
 
-PORT = 9300
+PORT = 9330
 #ip = '10.0.0.89'
-ip = '167.99.160.18'
-#ip = 'localhost'
+#ip = '167.99.160.18'
+ip = 'localhost'
 
 
 class Ui_Login(object):
