@@ -38,19 +38,24 @@ class Ui_Stream(object):
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.openGLWidget = QtWidgets.QOpenGLWidget(self.centralwidget)
-        self.openGLWidget.setObjectName("openGLWidget")
-        self.gridLayout.addWidget(self.openGLWidget, 0, 0, 1, 3)
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setObjectName("pushButton")
-        self.gridLayout.addWidget(self.pushButton, 1, 0, 1, 1)
-        self.pushButton.clicked.connect(self.play)
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.gridLayout.addWidget(self.pushButton_2, 1, 1, 1, 1)
-        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.gridLayout.addWidget(self.pushButton_3, 1, 2, 1, 1)
+        
+        self.label = QtWidgets.QLabel(self.centralwidget)
+        self.label.setObjectName("label")
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
+        
+        self.start_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.start_btn.setObjectName("pushButton")
+        self.gridLayout.addWidget(self.start_btn, 1, 0, 1, 1)
+        self.start_btn.clicked.connect(self.play)
+        
+        self.stop_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.stop_btn.setObjectName("stop_btn")
+        self.gridLayout.addWidget(self.stop_btn, 1, 1, 1, 1)
+        
+        self.mute_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.mute_btn.setObjectName("mute_btn")
+        self.gridLayout.addWidget(self.mute_btn, 1, 2, 1, 1)
+        
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -61,10 +66,10 @@ class Ui_Stream(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "Start"))
-        self.pushButton_2.setText(_translate("MainWindow", "Stop"))
-        self.pushButton_3.setText(_translate("MainWindow", "Mute"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Stream"))
+        self.start_btn.setText(_translate("MainWindow", "Start"))
+        self.stop_btn.setText(_translate("MainWindow", "Stop"))
+        self.mute_btn.setText(_translate("MainWindow", "Mute"))
 
     def connection(self):
         self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
