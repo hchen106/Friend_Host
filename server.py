@@ -9,7 +9,7 @@ from struct import pack
 
 class server:
     
-    PORT = 9263
+    PORT = 9269
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -197,7 +197,7 @@ class server:
                 # to do it all in one go, so I believe.
                 #to_read = length - len(data)
                 data += connection.recv(4096)
-            
+            connection.send(b'ended')
             threading.Thread(target = self.send_frame, args = (l, data,)).start()
             # F = open("frame1.jpg","wb")
             # F.write(data)

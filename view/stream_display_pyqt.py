@@ -106,13 +106,16 @@ class Ui_Stream(object):
                 data = F.read()
                 F.close()
                 length = pack('>Q', len(data))
-                print(length)
+                #print(length)
 
                 # sendall to make sure it blocks if there's back-pressure on the socket
                 self.sender_socket.sendall(length)
                 self.sender_socket.sendall(data)
                 #self.sender_socket.sendall(b'ended')
-
+                self.mess = b''
+                while self.mess != b'ended':
+                    self.mess = self.sender_socket.recv(4096)
+                    
         
         self.sender_socket.close()
 
