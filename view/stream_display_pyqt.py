@@ -15,6 +15,7 @@ import cv2
 import time
 from struct import pack
 from struct import unpack
+from PyQt5.QtGui import QIcon, QPixmap
 
 
 class Ui_Stream(object):
@@ -130,6 +131,9 @@ class Ui_Stream(object):
                 F = open("frame2.jpg","wb")
                 F.write(data)
                 F.close()
+                pixmap = QPixmap("frame2.jpg")
+                self.label.setPixmap(pixmap)
+                #self.resize(pixmap.width(),pixmap.height())
 
 if __name__ == "__main__":
     import sys

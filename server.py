@@ -9,7 +9,7 @@ from struct import pack
 
 class server:
     
-    PORT = 9254
+    PORT = 9263
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
