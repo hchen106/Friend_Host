@@ -167,19 +167,26 @@ class server:
         self.visitor_num += 1
         
         #print(addr)
-        #threading.Thread(target = self.wait_for_join_stream).start()
+        threading.Thread(target = self.wait_for_join_stream).start()
         #self.receive_and_send_frame()
         self.receive_frame()
 
 
     
     def wait_for_join_stream(self):
-        while True:
+        while self.Host:
+            c, addr = self.stream_socket.accept()
+            data = c.recv(4096)
+            d = data.decode('utf-8')
+            self.visitor_list[d] = c
+            self.visitor_num += 1
+            """
             data , addr = self.udp_socket.recvfrom(4096)
             d = data.decode('utf-8')
             
             self.visitor_list.append((d,addr))
             self.visitor_num += 1
+            """
         
     def receive_frame(self):
         #TODO: receive frame from the host
@@ -231,6 +238,8 @@ class server:
                     # sendall to make sure it blocks if there's back-pressure on the socket
                     self.visitor_list[visitor].sendall(frame[1])
                     self.visitor_list[visitor].sendall(frame[2])
+
+    
 
                     
 
