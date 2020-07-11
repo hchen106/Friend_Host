@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QMessageBox)
 class Ui_Chatroom(object):
     
     def __init__(self,app, username, ADDR):
+        #super().__init__()
         self.username = username
         self.ADDR = ADDR
         self.tcp_connection()
@@ -29,7 +30,16 @@ class Ui_Chatroom(object):
         self.app.aboutToQuit.connect(self.close)
         self.chatWindow.show()
         self.initialize()
-        
+    '''    
+    def closeEvent(self, event):
+        reply = QMessageBox.question(self, 'Window Close', 'Are you sure to logout?', 
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+    '''
+    
     def initializeStream(self):
         m = message()
         mes = m.encode("server","1 " + self.username + " has started a streaming.")
@@ -47,34 +57,50 @@ class Ui_Chatroom(object):
         MainWindow.resize(379, 571)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
         
         #chatroom text
-        self.gridLayout.setObjectName("gridLayout")
         self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
         self.textBrowser.setObjectName("textBrowser")
         self.scrollbar = self.textBrowser.verticalScrollBar()
-        
+        self.verticalLayout.addWidget(self.textBrowser)
         
         #text entry
-        self.gridLayout.addWidget(self.textBrowser, 0, 0, 1, 2)
         self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit.setObjectName("lineEdit")
         self.lineEdit.returnPressed.connect(self.sendText)
+        self.verticalLayout.addWidget(self.lineEdit)
         
+        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+
         #send button
-        self.gridLayout.addWidget(self.lineEdit, 1, 0, 1, 2)
         self.send_Button = QtWidgets.QPushButton(self.centralwidget)
         self.send_Button.setObjectName("pushButton")
         self.send_Button.clicked.connect(self.sendText)
+        self.horizontalLayout.addWidget(self.send_Button)
         
-        #stream button
-        self.gridLayout.addWidget(self.send_Button, 2, 0, 1, 1)
+        #stream button 
         self.stream_Button = QtWidgets.QPushButton(self.centralwidget)
         self.stream_Button.setObjectName("stream_Button")
         self.stream_Button.clicked.connect(self.initializeStream)
+        self.horizontalLayout.addWidget(self.stream_Button)
+        
+        #join buttom
+        self.join_Button = QtWidgets.QPushButton(self.centralwidget)
+        self.join_Button.setObjectName("join_Button")
+        #self.join_Button.clicked.connect()
+        self.horizontalLayout.addWidget(self.join_Button)
 
-        self.gridLayout.addWidget(self.stream_Button, 2, 1, 1, 1)
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        
+        
+        
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -109,6 +135,7 @@ class Ui_Chatroom(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Chatroom"))
         self.send_Button.setText(_translate("MainWindow", "Send"))
         self.stream_Button.setText(_translate("MainWindow", "Stream"))
+        self.join_Button.setText(_translate("MainWindow", "Join"))
 
 
     def tcp_connection(self):   
