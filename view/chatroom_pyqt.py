@@ -51,6 +51,9 @@ class Ui_Chatroom(object):
         
         self.ui = Ui_Stream(self.username,self.ADDR[0],self.ADDR[1]+1,True)
         print("stop")
+
+    def joinStream(self):
+        self.ui = Ui_Stream(self.username,self.ADDR[0], self.ADDR[1]+1,False)
     
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -94,7 +97,7 @@ class Ui_Chatroom(object):
         #join buttom
         self.join_Button = QtWidgets.QPushButton(self.centralwidget)
         self.join_Button.setObjectName("join_Button")
-        #self.join_Button.clicked.connect()
+        self.join_Button.clicked.connect(self.joinStream)
         self.horizontalLayout.addWidget(self.join_Button)
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
@@ -191,6 +194,7 @@ class Ui_Chatroom(object):
                 if(code[0] == "2"):
                     print("streaming")
                     self.textBrowser.insertPlainText(code[1] + "\n")
+                    #self.openStream()
                 elif(code[0] == "3"):
                     self.textBrowser.insertPlainText(code[1] + "\n")
                 else:

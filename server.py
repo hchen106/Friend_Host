@@ -6,10 +6,11 @@ import struct
 from controller.message_encoder import message
 from struct import unpack
 from struct import pack
+import time
 
 class server:
     
-    PORT = 9397
+    PORT = 9533
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -227,6 +228,7 @@ class server:
         #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         current = 0
         while True:
+            
             if(current < len(self.buffer)):
                 frame = self.buffer[current]
                 current += 1
@@ -238,7 +240,7 @@ class server:
                     # sendall to make sure it blocks if there's back-pressure on the socket
                     self.visitor_list[visitor].sendall(frame[1])
                     self.visitor_list[visitor].sendall(frame[2])
-
+            time.sleep(0.04)
     
 
                     

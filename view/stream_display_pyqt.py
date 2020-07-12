@@ -45,6 +45,9 @@ class Ui_Stream(object):
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
         
+        
+
+        
         self.start_btn = QtWidgets.QPushButton(self.centralwidget)
         self.start_btn.setObjectName("pushButton")
         self.gridLayout.addWidget(self.start_btn, 1, 0, 1, 1)
@@ -92,10 +95,10 @@ class Ui_Stream(object):
         self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         count = 0
         self.sender_socket.connect((self.ip,self.port+1))
-        self.file = cv2.VideoCapture("/home/matthew779/friend_host/test/Friend_Host/view/720p.mp4")
+        self.file = cv2.VideoCapture("720p.mp4")
         self.file.set(3,1280)
         self.file.set(4,720)
-        pixmap = QPixmap("/home/matthew779/friend_host/test/Friend_Host/resources/loading_Image.jpg")
+        pixmap = QPixmap("loading_Image.jpg")
         #pixmap.loadFromData()
         self.label.setPixmap(pixmap)
         while self.file.isOpened(): 
@@ -114,15 +117,19 @@ class Ui_Stream(object):
                 #print(length)
                 count += 1
                 # sendall to make sure it blocks if there's back-pressure on the socket
-                if count == 100: 
-                    self.sender_socket.send(b'')
-                    break
+                
+                
+                
                 self.sender_socket.sendall(length)
                 self.sender_socket.sendall(data)
                 #self.sender_socket.sendall(b'ended')
                 self.mess = b''
                 while self.mess != b'ended':
                     self.mess = self.sender_socket.recv(4096)
+            else:
+                
+                self.sender_socket.send(b'')
+                break
         #self.sender_socket.send(b'')
                     
         
