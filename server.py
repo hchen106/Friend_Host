@@ -10,7 +10,7 @@ import time
 
 class server:
     
-    PORT = 9533
+    PORT = 9605
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -22,8 +22,8 @@ class server:
     Host_num = 0
     visitor_num = 0
     #ip = '10.0.0.89'
-    ip = '167.99.160.18'
-    #ip = 'localhost'
+    #ip = '167.99.160.18'
+    ip = 'localhost'
     
    
     def __init__(self):
@@ -196,9 +196,30 @@ class server:
         self.recv_socket.bind((self.ip,self.PORT+2))
         self.recv_socket.listen(5)
         connection, addr = self.recv_socket.accept()
+        payload_size = struct.calcsize("L")
         #threading.Thread(target = self.send_frame).start()
         while True:
             #print(addr)
+            data = b''
+            print(frame_count)
+            
+            data += connection.recv(4096)
+            #print(data)
+            if data == b'': 
+                break
+            while len(data) < payload_size:
+                data += connection.recv(4096)
+            
+            packed_msg_size = data[:payload_size]
+            data = data[payload_size:]
+            msg_size = unpack("L", packed_msg_size)[0] ### CHANGED
+
+            # Retrieve all data based on message size
+            while len(data) < msg_size:
+                data += connection.recv(4096)
+
+            
+            """
             l =  connection.recv(8)
             print(l)
             if l == b'': 
@@ -210,9 +231,12 @@ class server:
                 # doing it in batches is generally better than trying
                 # to do it all in one go, so I believe.
                 #to_read = length - len(data)
-                data += connection.recv(4096)
+                data += connection.recv(100000)
+            """
             connection.send(b'ended')
-            self.buffer.append((frame_count, l, data))
+            
+            #self.buffer.append((frame_count, l, data))
+            self.buffer.append((frame_count, packed_msg_size, data))
             frame_count += 1
             
             
@@ -222,7 +246,7 @@ class server:
             # F.close()
             #threading.Thread(target = self.send_frame, args = (video_frame,)).start()
         self.send_frame()
-    
+    """
     def send_frame(self):
         
         #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -240,7 +264,32 @@ class server:
                     # sendall to make sure it blocks if there's back-pressure on the socket
                     self.visitor_list[visitor].sendall(frame[1])
                     self.visitor_list[visitor].sendall(frame[2])
-            time.sleep(0.04)
+            #time.sleep(0.04)
+    """
+
+    def send_frame(self):
+        
+        #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        current = 0
+        while True:
+            
+            if(current < len(self.buffer)):
+                frame = self.buffer[current]
+                current += 1
+                for visitor in self.visitor_list:
+                    #TODO: send frame to all visitors
+                    #length = pack('>Q', len(data))
+                    #print(length)
+                    #print(visitor)
+                    # sendall to make sure it blocks if there's back-pressure on the socket
+                    print(frame[1])
+                    self.visitor_list[visitor].sendall(frame[1] + frame[2])
+
+                    self.mess = b''
+                    while self.mess != b'ended':
+                        self.mess = self.visitor_list[visitor].recv(4096)
+                    #self.visitor_list[visitor].sendall(frame[2])
+            #time.sleep(0.04)
     
 
                     

@@ -16,10 +16,11 @@ import time
 from struct import pack
 from struct import unpack
 from PyQt5.QtGui import QIcon, QPixmap
-
+import pickle
+import struct
 
 class Ui_Stream(object):
-    def __init__(self,username,ip,port,host):
+    def __init__(self,username,ip,port,host):   
         self.username = username
         self.ip = ip
         self.port = port
@@ -113,6 +114,16 @@ class Ui_Stream(object):
                 F = open("frame.jpg",'rb')
                 data = F.read()
                 F.close()
+
+                data = pickle.dumps(data)
+
+                # Send message length first
+                message_size = pack("L", len(data)) ### CHANGED
+
+                # Then data
+                self.sender_socket.sendall(message_size + data)
+
+                """
                 length = pack('>Q', len(data))
                 #print(length)
                 count += 1
@@ -123,6 +134,7 @@ class Ui_Stream(object):
                 self.sender_socket.sendall(length)
                 self.sender_socket.sendall(data)
                 #self.sender_socket.sendall(b'ended')
+                """
                 self.mess = b''
                 while self.mess != b'ended':
                     self.mess = self.sender_socket.recv(4096)
@@ -139,8 +151,11 @@ class Ui_Stream(object):
     def recvFrame(self):
         print("recvFrame()")
         frame_count = 0
+        payload_size = struct.calcsize("L")
         #threading.Thread(target = self.display).start()
         while True: 
+            print("hi")
+            """
             length =  self.tcp_socket.recv(8)
             
             if length:
@@ -156,7 +171,26 @@ class Ui_Stream(object):
                         data += self.tcp_socket.recv(4096)
                     else:
                         data += self.tcp_socket.recv(to_read)
-                        
+            """
+            data = b''
+            #print(data)
+            while len(data) < payload_size:
+                data += self.tcp_socket.recv(4096)
+            print(data)
+            packed_msg_size = data[:payload_size]
+            data = data[payload_size:]
+            msg_size = unpack("L", packed_msg_size)[0] ### CHANGED
+            #print(msg_size)
+            # Retrieve all data based on message size
+            while len(data) < msg_size:
+                data += self.tcp_socket.recv(4096)
+
+            frame_data = data[:msg_size]
+            data = data[msg_size:]
+            
+            self.tcp_socket.send(b'ended')
+            # Extract frame
+            frame = pickle.loads(frame_data)           
                 
                 #self.tcp_socket.send(b'ended')
                 #threading.Thread(target = self.display, args = (data,)).start()
@@ -164,9 +198,9 @@ class Ui_Stream(object):
                 # #data = self.buffer[0]
                 # F.write(data)
                 # F.close()
-                pixmap = QPixmap()
-                pixmap.loadFromData(data)
-                self.label.setPixmap(pixmap)
+            pixmap = QPixmap()
+            pixmap.loadFromData(frame)
+            self.label.setPixmap(pixmap)
                 #self.buffer.remove(data)
                 #self.buffer.append((frame_count, data))
                 #frame_count += 1
