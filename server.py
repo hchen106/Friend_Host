@@ -7,10 +7,11 @@ from controller.message_encoder import message
 from struct import unpack
 from struct import pack
 import time
+import cv2
 
 class server:
     
-    PORT = 9605
+    PORT = 9641
     ADDR = ('',PORT)
     clients_address = []
     clients_socket = []
@@ -22,8 +23,8 @@ class server:
     Host_num = 0
     visitor_num = 0
     #ip = '10.0.0.89'
-    #ip = '167.99.160.18'
-    ip = 'localhost'
+    ip = '167.99.160.18'
+    #ip = 'localhost'
     
    
     def __init__(self):
@@ -170,8 +171,8 @@ class server:
         #print(addr)
         threading.Thread(target = self.wait_for_join_stream).start()
         #self.receive_and_send_frame()
-        self.receive_frame()
-
+        #self.receive_frame()
+        self.receive_File()
 
     
     def wait_for_join_stream(self):
@@ -188,6 +189,36 @@ class server:
             self.visitor_list.append((d,addr))
             self.visitor_num += 1
             """
+    
+    def receive_File(self): 
+        count = 0
+        self.recv_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.recv_socket.bind((self.ip, self.PORT+2))
+        self.recv_socket.listen(5)
+
+        connection, addr = self.recv_socket.accept()
+        finished = False
+        video = open("result.mp4","wb")
+        print(connection)
+        while True: 
+
+            buf = connection.recv(4096)
+
+            if buf != b'': 
+                print(buf)
+                count += 1
+                video.write(buf)
+            else: 
+                print(buf)
+                break
+        
+        self.recv_socket.close()
+        threading.Thread(target = self.send_frame).start()
+        
+        
+        
+
+        
         
     def receive_frame(self):
         #TODO: receive frame from the host
@@ -268,29 +299,67 @@ class server:
     """
 
     def send_frame(self):
-        
+        print("send_frame")
         #self.sender_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         current = 0
         while True:
-            
-            if(current < len(self.buffer)):
-                frame = self.buffer[current]
-                current += 1
-                for visitor in self.visitor_list:
-                    #TODO: send frame to all visitors
-                    #length = pack('>Q', len(data))
-                    #print(length)
-                    #print(visitor)
-                    # sendall to make sure it blocks if there's back-pressure on the socket
-                    print(frame[1])
-                    self.visitor_list[visitor].sendall(frame[1] + frame[2])
+            #TODO: send frame to all visitors
+            #length = pack('>Q', len(data))
+            #print(length)
+            #print(visitor)
+            # sendall to make sure it blocks if there's back-pressure on the socket
+            self.file = cv2.VideoCapture("result.mp4")
+            self.file.set(3,1280)
+            self.file.set(4,720)
+            count = 0
+            while self.file.isOpened(): 
+                #time.sleep(1.5)
+        
 
-                    self.mess = b''
-                    while self.mess != b'ended':
-                        self.mess = self.visitor_list[visitor].recv(4096)
+                ret, frame = self.file.read()
+                if ret: 
+                    
+                    cv2.imwrite("frame.jpg",frame)
+                    if cv2.waitKey(10) & 0xFF == ord('q'):
+                        break
+                    F = open("frame.jpg",'rb')
+                    data = F.read()
+                    F.close()
+
+                    
+                    length = pack('>Q', len(data))
+                    print(length)
+                    #print(length)
+                    count += 1
+                    # sendall to make sure it blocks if there's back-pressure on the socket
+                    
+                    for visitor in self.visitor_list:
+                    
+                        self.visitor_list[visitor].sendall(length)
+                        self.visitor_list[visitor].sendall(data)
+                    #self.sender_socket.sendall(b'ended')
+                        self.mess = b''
+                        while self.mess != b'ended':
+                            self.mess = self.visitor_list[visitor].recv(4096)
+                    """
+
+                    data = pickle.dumps(data)
+
+                    # Send message length first
+                    message_size = pack("L", len(data)) ### CHANGED
+
+                    # Then data
+                    self.sender_socket.sendall(message_size + data)
+
+
+                        print(frame[1])
+                        self.visitor_list[visitor].sendall(frame[1] + frame[2])
+                    """
+                    
                     #self.visitor_list[visitor].sendall(frame[2])
-            #time.sleep(0.04)
-    
+                    
+                #time.sleep(0.04)
+        
 
                     
 

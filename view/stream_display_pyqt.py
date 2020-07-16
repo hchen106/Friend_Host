@@ -89,7 +89,34 @@ class Ui_Stream(object):
 
     def play(self):
         if(self.host == True):
-            threading.Thread(target = self.sendFrame).start()
+            #threading.Thread(target = self.sendFrame).start()
+            threading.Thread(target = self.sendFile).start()
+
+
+    def sendFile(self):
+        print("sendFile")
+        self.sender_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sender_socket.connect((self.ip,self.port+1))
+        video = open("720p.mp4","rb")
+
+
+        pixmap = QPixmap("loading_Image.jpg")
+
+        self.label.setPixmap(pixmap)
+        finished = False
+        count = 0
+        while True: 
+            buf = video.read()
+
+            if buf != b'': 
+                print(buf)
+                self.sender_socket.sendall(buf)
+                count += 1
+            else: 
+                print(buf)
+                self.sender_socket.sendall(b'')
+                break
+        self.sender_socket.close()
 
     def sendFrame(self):
         print("sendFrame()")
@@ -155,7 +182,7 @@ class Ui_Stream(object):
         #threading.Thread(target = self.display).start()
         while True: 
             print("hi")
-            """
+            
             length =  self.tcp_socket.recv(8)
             
             if length:
@@ -171,6 +198,10 @@ class Ui_Stream(object):
                         data += self.tcp_socket.recv(4096)
                     else:
                         data += self.tcp_socket.recv(to_read)
+                self.tcp_socket.send(b'ended')
+                pixmap = QPixmap()
+                pixmap.loadFromData(data)
+                self.label.setPixmap(pixmap)
             """
             data = b''
             #print(data)
@@ -187,10 +218,10 @@ class Ui_Stream(object):
 
             frame_data = data[:msg_size]
             data = data[msg_size:]
+            """
             
-            self.tcp_socket.send(b'ended')
             # Extract frame
-            frame = pickle.loads(frame_data)           
+            #frame = pickle.loads(frame_data)           
                 
                 #self.tcp_socket.send(b'ended')
                 #threading.Thread(target = self.display, args = (data,)).start()
@@ -198,9 +229,7 @@ class Ui_Stream(object):
                 # #data = self.buffer[0]
                 # F.write(data)
                 # F.close()
-            pixmap = QPixmap()
-            pixmap.loadFromData(frame)
-            self.label.setPixmap(pixmap)
+            
                 #self.buffer.remove(data)
                 #self.buffer.append((frame_count, data))
                 #frame_count += 1

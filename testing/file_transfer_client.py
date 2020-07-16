@@ -1,7 +1,8 @@
 import socket
 
-ip = "localhost"
-port = 5004
+ip = "167.99.160.18"
+#ip = "localhost"
+port = 5006
 
 ADDR = (ip,port)
 
@@ -21,5 +22,10 @@ while True:
     if(buffer != b''):
         print(buffer)
         tcp_socket.sendall(buffer)
+    else: 
+        tcp_socket.sendall(b'')
+        break
+    
+    
 
 tcp_socket.close()
