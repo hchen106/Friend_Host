@@ -5,7 +5,7 @@ import socket
 class server_controller:
 
     ip = 'localhost'
-    PORT = 7015
+    PORT = 7021
 
 
     def __init__(self): 
@@ -19,7 +19,7 @@ class server_controller:
         self.tcp_socket.bind(('',self.PORT))
         self.tcp_socket.listen(5)
         print("Done")
-        server(self.PORT, self.ip, self.tcp_socket)
+        self.server = server(self.PORT, self.ip, self.tcp_socket)
         
 
     """
@@ -37,6 +37,7 @@ class server_controller:
             command = input()
             if(command == "x"):
                 print("Server is closing......")
+                self.server.forceClosed()
                 self.tcp_socket.close()
                 self.makeCloseConnection()
                 break

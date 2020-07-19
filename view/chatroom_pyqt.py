@@ -118,9 +118,11 @@ class Ui_Chatroom(object):
         m = message()
         mes = m.encode("server", ":")
 
-        self.tcp_socket.send(mes)
-        print("close message sent")
-        
+        try:
+            self.tcp_socket.send(mes)
+            print("close message sent")
+        except: 
+            print("server is closed")
         
         m = "" + self.username + " closed"
         m = bytes(m,'utf-8')

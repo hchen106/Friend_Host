@@ -40,7 +40,13 @@ class server:
         #self.tcp_connection()
         threading.Thread(target=self.tcp_connection).start()
         
-    
+    def forceClosed(self):
+
+        for users in self.clients_socket: 
+            m = message()
+            mes = m.encode("server", ":")
+            self.clients_socket[users].send(mes)
+
     
     def print_clients(self):
         print("-------------clients_socket--------")
@@ -56,7 +62,8 @@ class server:
             try:
                 mes = self.clients_socket[user].recv(4096)
                 print(mes)
-                
+                if(mes == b''):
+                    break
                 self.send_message(user,mes)
             except:
                 break
