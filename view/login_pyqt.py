@@ -13,10 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from view.chatroom_pyqt import Ui_Chatroom
 from view.signup_pyqt import Ui_SignUp
 
-PORT = 7021
+#PORT = sef
 #ip = '10.0.0.89'
 #ip = '167.99.160.18'
-ip = 'localhost'
+#ip = 'localhost'
 
 
 class Ui_Login(object):
@@ -27,7 +27,7 @@ class Ui_Login(object):
         #self.MainWindow = QtWidgets.QMainWindow()
         #self.ui = Ui_Login()
         #self.ui.setupUi(self.MainWindow)
-        self.ADDR = (ip,PORT)
+        
         self.MainWindow = MainWindow
         self.MainWindow.show()
         
@@ -38,9 +38,14 @@ class Ui_Login(object):
     
     def openChatroom(self):
         self.name = self.username_entry.text()
-        self.ui = Ui_Chatroom(self.app,self.name, self.ADDR)
-        #self.chatroom = Ui_Chatroom( self.name, self.ADDR)
-        self.MainWindow.close()
+        if self.ip_entry.text() != "" and self.port_entry.text() != "":
+            
+            self.ADDR = (self.ip_entry.text() ,int(self.port_entry.text()))
+            self.ui = Ui_Chatroom(self.app,self.name, self.ADDR)
+            self.MainWindow.close()
+        
+       
+       
 
     
     def openSignup(self):
@@ -51,47 +56,75 @@ class Ui_Login(object):
 
     
     
-    def setupUi(self, app,MainWindow):
-        self.app = app
+    def setupUi(self, app, MainWindow):
+        self.app = app 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(315, 137)
+        MainWindow.resize(422, 228)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
-        
+
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+
+        self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
-        self.username_label = QtWidgets.QLabel(self.centralwidget)
-        self.username_label.setObjectName("label")
-        self.gridLayout.addWidget(self.username_label, 0, 0, 1, 1)
-        
+
+        self.ip_label = QtWidgets.QLabel(self.centralwidget)
+        self.ip_label.setObjectName("ip_label")
+        self.gridLayout.addWidget(self.ip_label, 2, 0, 1, 1)
+
         self.username_entry = QtWidgets.QLineEdit(self.centralwidget)
-        self.username_entry.setObjectName("lineEdit")
+        self.username_entry.setObjectName("username_entry")
         self.username_entry.returnPressed.connect(self.openChatroom)
         self.gridLayout.addWidget(self.username_entry, 0, 1, 1, 1)
-        
-        self.password_label = QtWidgets.QLabel(self.centralwidget)
-        self.password_label.setObjectName("label_2")
-        self.gridLayout.addWidget(self.password_label, 1, 0, 1, 1)
-        
+
+        self.passward_label = QtWidgets.QLabel(self.centralwidget)
+        self.passward_label.setObjectName("passward_label")
+        self.gridLayout.addWidget(self.passward_label, 1, 0, 1, 1)
+
         self.password_entry = QtWidgets.QLineEdit(self.centralwidget)
-        self.password_entry.setObjectName("lineEdit_2")
-        self.password_entry.returnPressed.connect(self.openChatroom)
+        self.password_entry.setObjectName("password_entry")
         self.password_entry.setEchoMode(self.password_entry.Password)
+        self.password_entry.returnPressed.connect(self.openChatroom)
         self.gridLayout.addWidget(self.password_entry, 1, 1, 1, 1)
-        
-        self.login_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.login_Button.setObjectName("login_Button")
-        self.login_Button.clicked.connect(self.openChatroom)
-        self.gridLayout.addWidget(self.login_Button, 2, 1, 1, 1)
-        
-        self.signup_Button = QtWidgets.QPushButton(self.centralwidget)
-        self.signup_Button.setObjectName("signup_Button")
-        self.signup_Button.clicked.connect(self.openSignup)
-        self.gridLayout.addWidget(self.signup_Button, 2, 0, 1, 1)
-        
-        
-        
+
+        self.port_label = QtWidgets.QLabel(self.centralwidget)
+        self.port_label.setObjectName("port_label")
+        self.gridLayout.addWidget(self.port_label, 3, 0, 1, 1)
+
+        self.ip_entry = QtWidgets.QLineEdit(self.centralwidget)
+        self.ip_entry.setObjectName("ip_entry")
+        self.ip_entry.returnPressed.connect(self.openChatroom)
+        self.gridLayout.addWidget(self.ip_entry, 2, 1, 1, 1)
+
+        self.username_label = QtWidgets.QLabel(self.centralwidget)
+        self.username_label.setObjectName("username_label")
+        self.gridLayout.addWidget(self.username_label, 0, 0, 1, 1)
+
+        self.port_entry = QtWidgets.QLineEdit(self.centralwidget)
+        self.port_entry.setObjectName("port_entry")
+        self.port_entry.returnPressed.connect(self.openChatroom)
+        self.gridLayout.addWidget(self.port_entry, 3, 1, 1, 1)
+
+        self.verticalLayout.addLayout(self.gridLayout)
+
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+
+        self.signup_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.signup_btn.setObjectName("signup_btn")
+        self.signup_btn.clicked.connect(self.openSignup)
+        self.horizontalLayout.addWidget(self.signup_btn)
+
+        self.login_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.login_btn.setObjectName("login_btn")
+        self.login_btn.clicked.connect(self.openChatroom)
+        self.horizontalLayout.addWidget(self.login_btn)
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
+
+
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
@@ -101,11 +134,13 @@ class Ui_Login(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Login"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.ip_label.setText(_translate("MainWindow", "IP Address"))
+        self.passward_label.setText(_translate("MainWindow", "Password"))
+        self.port_label.setText(_translate("MainWindow", "Ports"))
         self.username_label.setText(_translate("MainWindow", "Username"))
-        self.password_label.setText(_translate("MainWindow", "Password"))
-        self.login_Button.setText(_translate("MainWindow", "Login"))
-        self.signup_Button.setText(_translate("MainWindow", "Sign Up"))
+        self.signup_btn.setText(_translate("MainWindow", "Sign Up"))
+        self.login_btn.setText(_translate("MainWindow", "Login"))
 
 
 

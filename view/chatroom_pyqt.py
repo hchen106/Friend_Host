@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QMessageBox)
 
 class Ui_Chatroom(object):
     
-    def __init__(self,app, username, ADDR):
+    def __init__(self, app, username, ADDR):
         #super().__init__()
         self.username = username
         self.ADDR = ADDR
