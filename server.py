@@ -11,10 +11,10 @@ import cv2
 
 class server:
     
-    PORT = 9641
+    PORT = 8007
     ADDR = ('',PORT)
     clients_address = []
-    clients_socket = []
+    clients_socket = {}
     visitor_list = {}
     buffer = []
     Size = 0
@@ -22,21 +22,26 @@ class server:
     Host = False
     Host_num = 0
     visitor_num = 0
-    #ip = '10.0.0.89'
-    ip = '167.99.160.18'
-    #ip = 'localhost'
+    FORCE_CLOSED = False
+    #ip = '10.0.0.89'threading
+    #ip = '167.99.160.18'
+    ip = 'localhost'
     
    
-    def __init__(self):
-        self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.tcp_socket.bind(('',self.PORT))
-        self.tcp_socket.listen(5)
+    def __init__(self,port,ip, connection):
+        #print("server established")
+        # self.tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        # self.tcp_socket.bind(('',self.PORT))
+        # self.tcp_socket.listen(5)
+        self.PORT = port
+        self.ip = ip
+        self.tcp_socket = connection
         
-        
+        #self.tcp_connection()
         threading.Thread(target=self.tcp_connection).start()
         
-
-
+    
+    
     def print_clients(self):
         print("-------------clients_socket--------")
         for c in self.clients_socket:
@@ -45,35 +50,35 @@ class server:
     
    
 
-    def recv_message(self,num):
+    def recv_message(self,user):
         #try: 
         while(True):
             try:
-                mes = self.clients_socket[num][1].recv(4096)
+                mes = self.clients_socket[user].recv(4096)
                 print(mes)
                 
-                self.send_message(num,mes)
+                self.send_message(user,mes)
             except:
                 break
         #except: 
         #    print("Failed to receive message")
         
-    def send_message(self,num,mes):
+    def send_message(self,user,mes):
         if(mes != b''):
             m = message()
             m.decode(mes)
             
             if(m.get_username() == "server" and m.get_message() == ":"):
-                self.clients_socket[num][1].send(mes)
+                self.clients_socket[user].send(mes)
                 #self.closing_socket[num] = None
                 self.Host = False
-                self.clients_socket[num] = None
+                del self.clients_socket[user]
                 print("One client log out")
                 self.print_clients()
                 #self.print_closing()
                 #mes = b'User has quit the room'
             elif(m.get_username() == "server" and m.get_message() == " "):
-                self.clients_socket[num][1].send(mes)
+                self.clients_socket[use].send(mes)
                 print("streaming closed")
                 print(mes)
                 self.Host = False
@@ -86,21 +91,27 @@ class server:
                     if(code[0] == "1"):
                         if(self.Host == False):
                             self.Host = True
-                            self.Host_num = num
+                            self.Host_num = user
                             c = code[1].split(':',1)
-                            self.clients_socket[num][1].send(b'server 2:You start streaming.')
+                            self.clients_socket[user].send(b'server 2:You start streaming.')
                             #TODO: Establishing a thread to receive video and audio frames
                             threading.Thread(target = self.udp_connection).start()
                         else: 
-                            self.clients_socket[num][1].send(b'server 3:Someone in the chatroom is streaming.')
+                            self.clients_socket[user].send(b'server 3:Someone in the chatroom is streaming.')
                             allow = False
                 #try: 
                     
                 i = 0
+                if(allow == True):
+                    for users in self.clients_socket: 
+                        if(users != user and self.clients_socket[users] != None): 
+                            self.clients_socket[users].send(mes)
+                """
                 while(i < self.Size and allow == True) :
                     if(i!=num and self.clients_socket[i] != None): 
                         self.clients_socket[i][1].send(mes)
                     i += 1
+                """
                 #except: 
                 #    print("Failed to send message ")
     
@@ -137,11 +148,13 @@ class server:
             c  = self.tcp_socket.accept()
 
             m = c[0].recv(4096)
+            if(m == b''): 
+                break
             m = m.decode("utf-8")
-            self.clients_socket.append((m,c[0]))
+            self.clients_socket[m] = c[0]
            
             #self.clients_socket.append(c[0])
-            threading.Thread(target = self.recv_message,args = (self.Size,)).start()
+            threading.Thread(target = self.recv_message,args = (m,)).start()
             o = message()
             mes = o.encode("server", m + " has enter the chat room")
             self.send_message(self.Size,mes)
@@ -384,7 +397,7 @@ class server:
     """
 
 
-server()
+#server()
     
     
     
