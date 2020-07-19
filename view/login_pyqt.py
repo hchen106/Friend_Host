@@ -12,6 +12,7 @@ import threading
 from PyQt5 import QtCore, QtGui, QtWidgets
 from view.chatroom_pyqt import Ui_Chatroom
 from view.signup_pyqt import Ui_SignUp
+from PyQt5.QtWidgets import QMessageBox
 
 #PORT = sef
 #ip = '10.0.0.89'
@@ -38,11 +39,17 @@ class Ui_Login(object):
     
     def openChatroom(self):
         self.name = self.username_entry.text()
-        if self.ip_entry.text() != "" and self.port_entry.text() != "":
+        if self.ip_entry.text() != "" and self.port_entry.text() != "" and self.name != "" and self.password_entry.text() != "":
             
             self.ADDR = (self.ip_entry.text() ,int(self.port_entry.text()))
             self.ui = Ui_Chatroom(self.app,self.name, self.ADDR)
             self.MainWindow.close()
+        else:
+            self.msg = QMessageBox()
+            self.msg.setWindowTitle("Warning")
+            self.msg.setText("Please enter all information")
+            self.x = self.msg.exec_()
+
         
        
        
